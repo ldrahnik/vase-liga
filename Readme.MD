@@ -2,7 +2,6 @@
 
 ## Funkce
 
-- [x] U přihlášených na akci zobrazuje pořadí hráče/čky z aktuálního probíhajícího žebříčku kola
-- [ ] U přihlášených na akci zobrazuje jiné relevantní informace o hráči/čce pokud se neúčastní probíhajícího  kola
-- [ ] U výsledků zobrazovat pořadí hráčky a jiné relevantní informace
-- [ ] U výsledků se pokusit seřadit fiktivně podle dostupných relevantních informací o hráči / hráčce (aktuální pořadí v žebříčku, vzájemné zápasy, ..) a zobrazovat vzdálenost (+5, -4) od skutečných výsledků. Odhadovat očekávaná umístění / fiktivně seřadit i pro nastávající akcí, tzn. bez tabulky Výsledky.
+- [x] U přihlášených hráčů/ček na akci zobrazuje pořadí z žebříčku aktuálně probíhajícího kola.
+- [ ] U přihlášených hráčů/ček na akci zobrazuje další relevantní informace (např. vzájemné zápasy, předchozí akce).
+- [ ] Z dostupných informací o účastnících odhaduje výsledky akce a toto fiktivní pořadí zobrazuje i po uskutečnění akce následovně: např. +5, -4.
