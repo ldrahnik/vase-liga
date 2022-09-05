@@ -20,7 +20,7 @@ function displayAveragePlayersRatingParticipatingToEvent(skillCategoryName) {
     const query = document.evaluate("//div[@id='actions-table']/*/div[contains(., '" + skillCategoryName + "')]", document, null, XPathResult.ANY_TYPE, null).iterateNext();
     if (query) {
         const strednePokrociliParticipantsUrl = query.parentElement.childNodes[9].childNodes[1].href;
-        loadFromUrlAjaxDOM(strednePokrociliParticipantsUrl, (payload) => {
+        loadFromUrlAjaxPayload(strednePokrociliParticipantsUrl, (payload) => {
 
             if(payload) {
                 const snippetHTML = payload.snippets["snippet--eventTabs"]
@@ -48,7 +48,7 @@ function displayAveragePlayersRatingParticipatingToEvent(skillCategoryName) {
 }
 
 
-function loadFromUrlAjaxDOM(url, callback) {
+function loadFromUrlAjaxPayload(url, callback) {
     $.ajax({
         type: "POST",
         url: url,
