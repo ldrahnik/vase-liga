@@ -36,7 +36,7 @@ function displayAveragePlayersRatingParticipatingToEvent(skillCategoryName) {
 
                             var averagePlayerRanking = document.createElement("div")
                             averagePlayerRanking.setAttribute("class", "c_table__tr__td c_table__tr__td--nowrap")
-                            averagePlayerRanking.innerHTML = "Průměrné pořadí v žebříčku: " + averagePlayersRating + "<br>(spočítáno pouze z " + countPlayersWithRatingInCurrentMonth + " hráčů hrající aktuální měsíc ligu)"
+                            averagePlayerRanking.innerHTML = "Průměrné pořadí v žebříčku: " + averagePlayersRating + "<br>(spočítáno z " + countPlayersWithRatingInCurrentMonth + " hráčů hrající aktuální měsíc ligu)"
 
                             query.parentElement.insertBefore(averagePlayerRanking, query.parentElement.lastChild.nextSibling);
                         })
