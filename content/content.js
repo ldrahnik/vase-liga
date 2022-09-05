@@ -27,18 +27,21 @@ function displayAveragePlayersRatingParticipatingToEvent(skillCategoryName) {
                 var parser = new DOMParser()
                 var responseDOM = parser.parseFromString(snippetHTML,"text/html")
                 var skillCategoryHeadingElement = responseDOM.evaluate("//h3[contains(., '" + skillCategoryName + "')]", responseDOM, null, XPathResult.ANY_TYPE, null).iterateNext();
-                responseDOM = skillCategoryHeadingElement.nextSibling.nextSibling
 
-                loadPragueCurrentMonthRankingTableDOM((rankingTableDOM) => {
-                    calculateRatingForAllPlayersParticipatingToEvent(responseDOM, rankingTableDOM, function(averagePlayersRating, countPlayersWithRatingInCurrentMonth) {
+                if(skillCategoryHeadingElement) {
+                    responseDOM = skillCategoryHeadingElement.nextSibling.nextSibling
 
-                        var averagePlayerRanking = document.createElement("div")
-                        averagePlayerRanking.setAttribute("class", "c_table__tr__td c_table__tr__td--nowrap")
-                        averagePlayerRanking.innerHTML = "Průměrné pořadí v žebříčku: " + averagePlayersRating + "<br>(spočítáno pouze z " + countPlayersWithRatingInCurrentMonth + " hráčů hrající aktuální měsíc ligu)"
+                    loadPragueCurrentMonthRankingTableDOM((rankingTableDOM) => {
+                        calculateRatingForAllPlayersParticipatingToEvent(responseDOM, rankingTableDOM, function(averagePlayersRating, countPlayersWithRatingInCurrentMonth) {
 
-                        query.parentElement.insertBefore(averagePlayerRanking, query.parentElement.lastChild.nextSibling);
+                            var averagePlayerRanking = document.createElement("div")
+                            averagePlayerRanking.setAttribute("class", "c_table__tr__td c_table__tr__td--nowrap")
+                            averagePlayerRanking.innerHTML = "Průměrné pořadí v žebříčku: " + averagePlayersRating + "<br>(spočítáno pouze z " + countPlayersWithRatingInCurrentMonth + " hráčů hrající aktuální měsíc ligu)"
+
+                            query.parentElement.insertBefore(averagePlayerRanking, query.parentElement.lastChild.nextSibling);
+                        })
                     })
-                })
+                }
             }
         })
     }
