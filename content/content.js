@@ -165,7 +165,7 @@ function displayRatingForPlayerParticipatingToEvent(playerElement, rankingTableD
     const playerName = playerElement.innerText
     loadPlayerRankingFromRankingTableDOM(playerName, rankingTableDOM, (playerRanking) => {
         if (playerRanking) {
-            playerElement.firstChild.textContent = playerName + " (" + playerRanking + ")"
+            playerElement.innerHTML = "<span>" + playerName + "</span> (" + playerRanking + ")"
         }
     })
 }
