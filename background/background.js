@@ -22,11 +22,13 @@ function getSelectedTab(callback) {
 chrome.alarms.onAlarm.addListener(function(alarm) {
     if (alarm.name === ALARM_EVENT_ADDITIONAL_PERSONAL_PLAYER_STATS) {
         getSelectedTab(function(tab) {
-            chrome.tabs.sendMessage(tab.id,
-                {
-                    text: ALARM_EVENT_ADDITIONAL_PERSONAL_PLAYER_STATS
-                }
-            );
+            if(tab) {
+                chrome.tabs.sendMessage(tab.id,
+                    {
+                        text: ALARM_EVENT_ADDITIONAL_PERSONAL_PLAYER_STATS
+                    }
+                );
+            }
         });
     }
 });
