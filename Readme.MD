@@ -1,4 +1,4 @@
-# Neoficiální rozšíření pro web vaseliga.cz
+# Neoficiální rozšíření do prohlížeče pro hráče amatérské ligy VašeLiga (vaseliga.cz)
 
 ## Funkce
 
