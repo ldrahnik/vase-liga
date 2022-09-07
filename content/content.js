@@ -12,14 +12,16 @@ const INTERMEDIATE = 'Středně pokročilí'
 const BEGINERS = 'Začátečníci'
 const ADVANCED = 'Pokročilí'
 
+
 function getAverageStatsForAllPlayersCurrentRoundText(
     averagePlayersRating, 
     averagePlayerPercentil,
     countPlayersWithRating,
     countPlayers
 ) {
-    return "Průměrné místo v žebříčku: " + averagePlayersRating + " a percentil: " + averagePlayerPercentil + "<br>(spočítáno z " + countPlayersWithRating + " hráčů hrající aktuálně probíhající kolo s celkovým počtem hráčů " + countPlayers + "."
+    return "Pro " + countPlayersWithRating + " hráčů, kteří hrají aktuální kolo je průměrné místo v žebříčku: " + averagePlayersRating + " a průměrný percentil: " + averagePlayerPercentil + ".<br> * celkově v aktuálním kole hraje " + countPlayers + " hráčů"
 }
+
 
 function getAverageStatsForAllPlayersPreviousRoundText(
     averagePlayersRating, 
@@ -27,7 +29,7 @@ function getAverageStatsForAllPlayersPreviousRoundText(
     countPlayersWithRating,
     countPlayers
 ) {
-    return "<br><br>Průměrné místo v žebříčku: " + averagePlayersRating + " a percentil: " + averagePlayerPercentil + "<br>(spočítáno z " + countPlayersWithRating + " hráčů, kteří hráli minulé kolo s celkovým počtem hráčů " + countPlayers + "."
+    return "<br><br>Pro " + countPlayersWithRating + " hráčů, kteří hráli minulé kolo bylo průměrné místo v žebříčku: " + averagePlayersRating + " a průměrný percentil: " + averagePlayerPercentil + ".<br> * celkově v minulém kole hrálo " + countPlayers + " hráčů"
 }
 
 
@@ -63,6 +65,7 @@ function getAdditionalStatsElement(query, skillCategoryName) {
     }
     return additionalStats
 }
+
 
 function displayAdditionalStatsForPlayersParticipatingToEvent(rankingTableUrl, additionalTextCallback, skillCategoryName, callback) {
 
