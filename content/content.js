@@ -1,7 +1,8 @@
 const ALARM_EVENT_ADDITIONAL_PERSONAL_PLAYER_STATS = "alarm-eventAdditionalPersonalPlayerStats"
 
 // urls
-const RANKING_TABLE_BADMINTON_PRAGUE_CURRENT_MONTH = "https://www.vaseliga.cz/zebricek/badminton/praha"
+const RANKING_TABLE_BADMINTON_PRAGUE = "https://www.vaseliga.cz/zebricek/badminton/praha"
+const RANKING_TABLE_BADMINTON_PRAGUE_CURRENT_MONTH = RANKING_TABLE_BADMINTON_PRAGUE
 
 // load players rating only once
 var load_rating_for_all_players_participating_to_event = false
@@ -11,13 +12,63 @@ const INTERMEDIATE = 'Středně pokročilí'
 const BEGINERS = 'Začátečníci'
 const ADVANCED = 'Pokročilí'
 
-displayAveragePlayersRatingParticipatingToEvent(BEGINERS)
-displayAveragePlayersRatingParticipatingToEvent(ADVANCED)
-displayAveragePlayersRatingParticipatingToEvent(INTERMEDIATE)
+function getAverageStatsForAllPlayersCurrentRoundText(
+    averagePlayersRating, 
+    averagePlayerPercentil,
+    countPlayersWithRating,
+    countPlayers
+) {
+    return "Průměrné místo v žebříčku: " + averagePlayersRating + " a percentil: " + averagePlayerPercentil + "<br>(spočítáno z " + countPlayersWithRating + " hráčů hrající aktuálně probíhající kolo s celkovým počtem hráčů " + countPlayers + "."
+}
 
-function displayAveragePlayersRatingParticipatingToEvent(skillCategoryName) {
+function getAverageStatsForAllPlayersPreviousRoundText(
+    averagePlayersRating, 
+    averagePlayerPercentil,
+    countPlayersWithRating,
+    countPlayers
+) {
+    return "<br><br>Průměrné místo v žebříčku: " + averagePlayersRating + " a percentil: " + averagePlayerPercentil + "<br>(spočítáno z " + countPlayersWithRating + " hráčů, kteří hráli minulé kolo s celkovým počtem hráčů " + countPlayers + "."
+}
 
-    const query = document.evaluate("//div[@id='actions-table']/*/div[contains(., '" + skillCategoryName + "')]", document, null, XPathResult.ANY_TYPE, null).iterateNext();
+
+displayAdditionalStatsForPlayersParticipatingToEvent(RANKING_TABLE_BADMINTON_PRAGUE_CURRENT_MONTH, getAverageStatsForAllPlayersCurrentRoundText, BEGINERS, () => {
+    loadPreviousRankingTableUrl((previous_month_ranking_table_url) => {
+        displayAdditionalStatsForPlayersParticipatingToEvent(previous_month_ranking_table_url, getAverageStatsForAllPlayersPreviousRoundText, BEGINERS)
+    })
+})
+displayAdditionalStatsForPlayersParticipatingToEvent(RANKING_TABLE_BADMINTON_PRAGUE_CURRENT_MONTH, getAverageStatsForAllPlayersCurrentRoundText, ADVANCED, () => {
+    loadPreviousRankingTableUrl((previous_month_ranking_table_url) => {
+        displayAdditionalStatsForPlayersParticipatingToEvent(previous_month_ranking_table_url, getAverageStatsForAllPlayersPreviousRoundText, ADVANCED)
+    })
+})
+displayAdditionalStatsForPlayersParticipatingToEvent(RANKING_TABLE_BADMINTON_PRAGUE_CURRENT_MONTH, getAverageStatsForAllPlayersCurrentRoundText, INTERMEDIATE, () => {
+    loadPreviousRankingTableUrl((previous_month_ranking_table_url) => {
+        displayAdditionalStatsForPlayersParticipatingToEvent(previous_month_ranking_table_url, getAverageStatsForAllPlayersPreviousRoundText, INTERMEDIATE)
+    })
+})
+
+
+function getAdditionalStatsElement(query, skillCategoryName) {
+
+    const noSpecialCharactersSkillCategoryName = skillCategoryName.replace(/[^a-zA-Z0-9 ]/g, '').toLowerCase()
+    const id = "additional-stats-" + noSpecialCharactersSkillCategoryName
+
+    var additionalStats = document.getElementById(id) 
+    if(!additionalStats) {
+        additionalStats = document.createElement("div")
+        additionalStats.setAttribute("id", id)
+        additionalStats.setAttribute("class", "c_table__tr__td c_table__tr__td--nowrap")
+
+        query.parentElement.insertBefore(additionalStats, query.parentElement.lastChild.nextSibling);
+    }
+    return additionalStats
+}
+
+function displayAdditionalStatsForPlayersParticipatingToEvent(rankingTableUrl, additionalTextCallback, skillCategoryName, callback) {
+
+    const query = document.evaluate("//div[@id='actions-table']/*/div[contains(., '" + skillCategoryName + "')]", document, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null).iterateNext();
+    var additionalStats = getAdditionalStatsElement(query, skillCategoryName)
+
     if (query) {
         const strednePokrociliParticipantsUrl = query.parentElement.childNodes[9].childNodes[1].href;
         loadFromUrlAjaxPayload(strednePokrociliParticipantsUrl, (payload) => {
@@ -31,14 +82,13 @@ function displayAveragePlayersRatingParticipatingToEvent(skillCategoryName) {
                 if(skillCategoryHeadingElement) {
                     responseDOM = skillCategoryHeadingElement.nextSibling.nextSibling
 
-                    loadPragueCurrentMonthRankingTableDOM((rankingTableDOM) => {
-                        calculateRatingForAllPlayersParticipatingToEvent(responseDOM, rankingTableDOM, function(averagePlayersRating, countPlayersWithRatingInCurrentMonth) {
+                    loadFromUrlDOM(rankingTableUrl, function(rankingTableDOM) {
+                        calculateAdditionalStatsForAllPlayersParticipatingToEvent(responseDOM, rankingTableDOM, function(averagePlayersRating, averagePlayerPercentil, countPlayersWithRating, totalPlayers) {
+                            additionalStats.innerHTML += additionalTextCallback(averagePlayersRating, averagePlayerPercentil, countPlayersWithRating, totalPlayers)                            
 
-                            var averagePlayerRanking = document.createElement("div")
-                            averagePlayerRanking.setAttribute("class", "c_table__tr__td c_table__tr__td--nowrap")
-                            averagePlayerRanking.innerHTML = "Průměrné pořadí v žebříčku: " + averagePlayersRating + "<br>(spočítáno z " + countPlayersWithRatingInCurrentMonth + " hráčů hrající aktuální měsíc ligu)"
-
-                            query.parentElement.insertBefore(averagePlayerRanking, query.parentElement.lastChild.nextSibling);
+                            if (typeof callback == 'function') {
+                                callback()
+                            }
                         })
                     })
                 }
@@ -78,11 +128,120 @@ function loadFromUrlDOM(url, callback) {
             })
         }
     })
+    .catch(() => {
+        callback(null)
+    })
 }
 
 
-function loadPragueCurrentMonthRankingTableDOM(callback) {
-    fetch(RANKING_TABLE_BADMINTON_PRAGUE_CURRENT_MONTH, {
+async function loadCountPlayersFromRankingTableDOM(rankingTableDOM) {
+    return new Promise(resolve => {
+        const countPlayersElement = rankingTableDOM.querySelector(".fn_sortable_round")
+        const countPlayers = countPlayersElement.tBodies[0].rows.length
+
+        resolve(countPlayers)
+    })
+}
+
+
+function loadPlayerRankingFromRankingTableDOM(playerName, rankingTableDOM, callback) {
+    const playerRowQuery = rankingTableDOM.evaluate("//div[@id='snippet--roundRankings']//span[contains(., '" + playerName + "')]", rankingTableDOM, null, XPathResult.ANY_TYPE, null).iterateNext();
+
+    var playerRanking = null
+    if (playerRowQuery) {
+        playerRanking = playerRowQuery.parentNode.parentNode.parentNode.previousSibling.previousSibling.innerText
+    }
+    callback(playerRanking)
+}
+
+
+async function loadRankingForPlayerParticipatingToEvent(playerElement, rankingTableDOM) {
+    return new Promise(resolve => {
+        const playerName = playerElement.innerText
+        loadPlayerRankingFromRankingTableDOM(playerName, rankingTableDOM, (playerRanking) => {
+            if (playerRanking) {
+                resolve(parseInt(playerRanking))
+            } else {
+                resolve(0)
+            }
+        })
+    })
+}
+
+
+async function calculateAdditionalStatsForAllPlayersParticipatingToEvent(document, rankingTableDOM, callback) {
+    const playerElements = document.querySelectorAll("a[href*='hrac/']")
+
+    if (!playerElements.length) {
+        return
+    }
+
+    var totalPercentil = 0
+    var totalRanking = 0
+    var countPlayers = await loadCountPlayersFromRankingTableDOM(rankingTableDOM)
+    var countPlayersWithRating = 0
+
+    for(let index = 0; index < playerElements.length; index++) {
+        var playerRanking = await loadRankingForPlayerParticipatingToEvent(playerElements[index], rankingTableDOM)
+
+        if(playerRanking) {
+            countPlayersWithRating += 1
+            totalRanking += playerRanking
+            // TODO: percentil
+            totalPercentil += ((countPlayers - playerRanking) / countPlayers) * 100
+        }
+    }
+    
+    const averagePlayerRanking = totalRanking / countPlayersWithRating
+    const averagePlayerPercentil = totalPercentil / countPlayersWithRating
+
+    callback(parseInt(averagePlayerRanking), parseInt(averagePlayerPercentil), countPlayersWithRating, countPlayers)
+}
+
+
+function displayRatingForAllPlayersParticipatingToEvent(rankingTableUrl, document, additionalTextCallback, callback) {
+
+    const playerElements = document.querySelectorAll("div[id='snippet--eventTabs'] a[href*='hrac/']")
+
+    if(!playerElements.length) {
+        return null
+    }
+
+    loadFromUrlDOM(rankingTableUrl, function(rankingTableDOM) {
+        if(rankingTableDOM) {
+            for(let index = 0; index < playerElements.length; index++) {
+                var playerElement = playerElements[index]
+                displayRatingForPlayerParticipatingToEvent(
+                    playerElement, 
+                    rankingTableDOM,
+                    additionalTextCallback
+                )
+                if(index + 1 == playerElements.length) {
+                    callback(true)
+                }
+            }
+        } else {
+            callback(false)
+        }
+    })
+}
+
+
+function displayRatingForPlayerParticipatingToEvent(playerElement, rankingTableDOM, additionalTextCallback) {
+
+    var playerNameElement = playerElement.childNodes[0]
+    const playerName = playerNameElement.innerText
+
+    loadPlayerRankingFromRankingTableDOM(playerName, rankingTableDOM, (playerRanking) => {
+        if (playerRanking) {
+            playerElement.innerHTML += additionalTextCallback(playerRanking)
+        }
+    })
+}
+
+
+function loadDOM(url, callback) {
+    fetch(url, {
         method: 'get',
         headers: {
             "Content-type": "application/json; charset=UTF-8"
@@ -100,78 +259,44 @@ function loadPragueCurrentMonthRankingTableDOM(callback) {
 }
 
 
-function loadPlayerRankingFromRankingTableDOM(playerName, rankingTableDOM, callback) {
-    const playerRowQuery = rankingTableDOM.evaluate("//div[@id='snippet--roundRankings']//span[contains(., '" + playerName + "')]", rankingTableDOM, null, XPathResult.ANY_TYPE, null).iterateNext();
-    var playerRanking = null
-    if (playerRowQuery) {
-        playerRanking = playerRowQuery.parentNode.parentNode.parentNode.previousSibling.previousSibling.innerText
-    }
-    callback(playerRanking)
-}
+function loadPreviousRankingTableUrl(callback) {
+    loadDOM(RANKING_TABLE_BADMINTON_PRAGUE, function(document) {
+        var previousRoundElement = document.getElementById("fn_round-select").childNodes[3]
+        var previousRoundId = previousRoundElement.value
 
-async function loadRatingForPlayerParticipatingToEvent(playerElement, rankingTableDOM) {
-    return new Promise(resolve => {
-        const playerName = playerElement.innerText
-        loadPlayerRankingFromRankingTableDOM(playerName, rankingTableDOM, (playerRanking) => {
-            if (playerRanking) {
-                resolve(parseInt(playerRanking))
-            } else {
-                resolve(0)
-            }
-        })
+        var url = "https://www.vaseliga.cz/zebricek/badminton/praha?jsRoundId=" + previousRoundId + "&do=loadRank"
+        callback(url)
     })
 }
 
-async function calculateRatingForAllPlayersParticipatingToEvent(document, rankingTableDOM, callback) {
-    const playerElements = document.querySelectorAll("a[href*='hrac/']")
-
-    var totalRating = 0
-    var countPlayersWithRating = 0
-
-    for(let index = 0; index < playerElements.length; index++) {
-        var playerRating = await loadRatingForPlayerParticipatingToEvent(playerElements[index], rankingTableDOM)
-        if(playerRating) {
-            countPlayersWithRating += 1
-            totalRating += playerRating
-        }
-    }
-    
-    const averagePlayerRating = totalRating / countPlayersWithRating
-
-    callback(parseInt(averagePlayerRating), countPlayersWithRating)
-}
-
-
-function displayRatingForAllPlayersParticipatingToEvent(document) {
-
-    if (!load_rating_for_all_players_participating_to_event) {
-
-        const playerElements = document.querySelectorAll("div[id='snippet--eventTabs'] a[href*='hrac/']")
-
-        if(playerElements.length) {
-            load_rating_for_all_players_participating_to_event = true
-        }
-
-        loadPragueCurrentMonthRankingTableDOM((rankingTableDOM) => {
-            playerElements.forEach((playerElement) => {
-                displayRatingForPlayerParticipatingToEvent(playerElement, rankingTableDOM)
-            })
-        })
-    }
-}
-
-function displayRatingForPlayerParticipatingToEvent(playerElement, rankingTableDOM) {
-
-    const playerName = playerElement.innerText
-    loadPlayerRankingFromRankingTableDOM(playerName, rankingTableDOM, (playerRanking) => {
-        if (playerRanking) {
-            playerElement.innerHTML = "<span>" + playerName + "</span> (" + playerRanking + ")"
-        }
-    })
-}
 
 chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
-    if (msg.text == ALARM_EVENT_ADDITIONAL_PERSONAL_PLAYER_STATS) {
-        displayRatingForAllPlayersParticipatingToEvent(document)
+    if (msg.text === ALARM_EVENT_ADDITIONAL_PERSONAL_PLAYER_STATS) {
+        if (!load_rating_for_all_players_participating_to_event) {
+            displayRatingForAllPlayersParticipatingToEvent(
+                RANKING_TABLE_BADMINTON_PRAGUE_CURRENT_MONTH,
+                document,
+                (playerRanking) => { 
+                    return ", " + playerRanking + ". v žebříčku aktuálního kola"
+                },
+                (result) => {
+                    if (result) {
+                        load_rating_for_all_players_participating_to_event = true
+                    }
+                    loadPreviousRankingTableUrl((previous_month_ranking_table_url) => {
+                        displayRatingForAllPlayersParticipatingToEvent(
+                            previous_month_ranking_table_url, 
+                            document, 
+                            (playerRanking) => { 
+                                return ", " + playerRanking + ". v žebříčku předešlého kola"
+                            },
+                            () => {
+                                // sendResponse(true)
+                            }
+                        )
+                    })
+                }
+            )
+        }
     }
-});
+})
