@@ -6,5 +6,6 @@
 ![preview](https://github.com/ldrahnik/vase-liga/blob/master/preview/preview_player_stats_on_event_detail.png)
 - [x] Zobrazuje průměrné pořadí a percentil přihlášených hráčů/hráček pro každou kategorii z žebříčku aktuálně probíhajícího a předcházejícího kola.
 ![preview](https://github.com/ldrahnik/vase-liga/blob/master/preview/preview_average_players_percentil_for_each_event_skill_group.png)
-- [x] Zobrazuje odhad pořadí z žebříčku pro hráče, kteří se zúčastnili pouze posledních 2 turnajů a to konkrétně srovnáním jejich výsledků s hráči, kteří kolo v době konání turnaje hráli
+- [x] Zobrazuje odhad pořadí z žebříčku pro hráče, kteří se zúčastnili posledních 2 turnajů a to konkrétně srovnáním jejich výsledků s hráči, kteří se turnaje účastnili také a odpovídající kolo v době konání turnaje hráli.
+![preview](https://github.com/ldrahnik/vase-liga/blob/master/preview/preview_average_players_percentil_for_each_event_skill_group_2.png)
 - [ ] Z dostupných informací o účastnících odhaduje výsledky akce a toto fiktivní pořadí zobrazuje i po uskutečnění akce následovně: např. +5, -4.
