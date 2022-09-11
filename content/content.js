@@ -100,24 +100,23 @@ async function estimatePreviousEvents() {
 
 
 async function getTextFunctionForEstimatingPlayersFromPreviousEvent(previousEvent, displayedEventDateText) {
-    const fdfd = previousEvent.date == displayedEventDateText
     return previousEvent.date == displayedEventDateText ? getEstimatedAverageStatsForAllPlayersOfThisEventWithResultsText : getEstimatedAverageStatsForAllPlayersOfPreviousEventWithResultsText
 }
 
 
 async function getTextFunctionForEstimatingPlayersFromPreviousPreviousEvent(previousEvent, displayedEventDateText) {
-    const fdfd = previousEvent.date == displayedEventDateText
     return previousEvent.date == displayedEventDateText ? getEstimatedAverageStatsForAllPlayersOfThisEventWithResultsText : getEstimatedAverageStatsForAllPlayersOfPreviousPreviousEventWithResultsText
 }
 
 
 async function getTextFunctionForEstimatingPlayerFromPreviousEvent(previousEvent, displayedEventDateText) {
-    return previousEvent.date == displayedEventDateText ? getEstimatedAverageStatsForAllPlayersOfThisEventWithResultsText : getEstimatedAverageStatsForAllPlayersOfPreviousEventWithResultsText
+    return previousEvent.date == displayedEventDateText ? getStatsForPlayerEstimatedFromThisEventText : getStatsForPlayerEstimatedFromPreviousEventText
+
 }
 
 
 async function getTextFunctionForEstimatingPlayerFromPreviousPreviousEvent(previousEvent, displayedEventDateText) {
-    return previousEvent.date == displayedEventDateText ? getEstimatedAverageStatsForAllPlayersOfThisEventWithResultsText : getEstimatedAverageStatsForAllPlayersOfPreviousPreviousEventWithResultsText
+    return previousEvent.date == displayedEventDateText ? getStatsForPlayerEstimatedFromThisEventText : getStatsForPlayerEstimatedFromPreviousPreviousEventText
 }
 
 
