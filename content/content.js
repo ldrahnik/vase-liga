@@ -61,10 +61,11 @@ function getAverageStatsForAllPlayersPreviousRoundText(
 function getEstimatedAverageStatsForAllPlayersOfPreviousEventWithResultsText(
     averagePlayerEstimatedRanking,
     averagePlayerEstimatedPercentil,
-    countPlayersEstimated
+    countPlayersEstimated,
+    countPlayersAppropriateRound
 ) {
     if(countPlayersEstimated) {
-        return "<br><br>Pro " + countPlayersEstimated + " hráčů bylo z výsledků na minulém turnaji odhadnuté průměrné místo v žebříčku: " + averagePlayerEstimatedRanking + " a průměrný percentil: " + averagePlayerEstimatedPercentil + "."
+        return "<br><br>Pro " + countPlayersEstimated + " hráčů bylo z výsledků na minulém turnaji odhadnuté průměrné místo v žebříčku: " + averagePlayerEstimatedRanking + " a průměrný percentil: " + averagePlayerEstimatedPercentil + ".<br> * celkově v odpovídajícím kole hrálo " + countPlayersAppropriateRound + " hráčů"
     }
     return ""
 }
@@ -73,24 +74,28 @@ function getEstimatedAverageStatsForAllPlayersOfPreviousEventWithResultsText(
 function getEstimatedAverageStatsForAllPlayersOfPreviousPreviousEventWithResultsText(
     averagePlayerEstimatedRanking,
     averagePlayerEstimatedPercentil,
-    countPlayersEstimated
+    countPlayersEstimated,
+    countPlayersAppropriateRound
 ) {
     if(countPlayersEstimated) {
-        return "<br><br>Pro " + countPlayersEstimated + " hráčů bylo z výsledků na předminulém turnaji odhadnuté průměrné místo v žebříčku: " + averagePlayerEstimatedRanking + " a průměrný percentil: " + averagePlayerEstimatedPercentil + "."
+        return "<br><br>Pro " + countPlayersEstimated + " hráčů bylo z výsledků na předminulém turnaji odhadnuté průměrné místo v žebříčku: " + averagePlayerEstimatedRanking + " a průměrný percentil: " + averagePlayerEstimatedPercentil + ".<br> * celkově v odpovídajícím kole hrálo " + countPlayersAppropriateRound + " hráčů"
     }
     return ""
 }
 
+
 function getEstimatedAverageStatsForAllPlayersOfThisEventWithResultsText(
     averagePlayerEstimatedRanking,
     averagePlayerEstimatedPercentil,
-    countPlayersEstimated
+    countPlayersEstimated,
+    countPlayersAppropriateRound
 ) {
-    return "<br><br>Pro " + countPlayersEstimated + " hráčů bylo z výsledků na tomto turnaji odhadnuté průměrné místo v žebříčku: " + averagePlayerEstimatedRanking + " a průměrný percentil: " + averagePlayerEstimatedPercentil + "."
+    return "<br><br>Pro " + countPlayersEstimated + " hráčů bylo z výsledků na tomto turnaji odhadnuté průměrné místo v žebříčku: " + averagePlayerEstimatedRanking + " a průměrný percentil: " + averagePlayerEstimatedPercentil + ".<br> * celkově v odpovídajícím kole hrálo " + countPlayersAppropriateRound + " hráčů"
 }
 
-var previousEvents = []
 
+
+var previousEvents = []
 
 async function estimatePreviousEvents() {
     previousEvents = await loadPreviousEventResults(2)
@@ -481,7 +486,7 @@ async function displayAdditionalEstimatedStatsForAllPlayersParticipatingToEvent(
                 responseDOM = skillCategoryHeadingElement.nextSibling.nextSibling
                 calculateEstimatedStatsForAllPlayersParticipatingToEvent(responseDOM, oneOfPreviousEvents, skillCategoryName, function(averagePlayerEstimatedPercentil, averagePlayerEstimatedRanking, countPlayersEstimated) {
                     if(countPlayersEstimated) {
-                        additionalStats.innerHTML += additionalTextCallback(averagePlayerEstimatedPercentil, averagePlayerEstimatedRanking, countPlayersEstimated)
+                        additionalStats.innerHTML += additionalTextCallback(averagePlayerEstimatedPercentil, averagePlayerEstimatedRanking, countPlayersEstimated, oneOfPreviousEvents.countPlayersAppropriateRound)
                     }
 
                     if (typeof callback == 'function') {
@@ -734,11 +739,9 @@ async function displayEventAdditionalPersonalPlayerStats() {
         const eventDateLabelElement = document.evaluate("//th[contains(., 'Začátek akce')]", document, null, XPathResult.ANY_TYPE, null).iterateNext();
         // format 02.09.2022 19:00
         const displayedEventDateText = eventDateLabelElement.nextSibling.nextSibling.innerText
-        var textEstimatingFromPreviousEvent = await getTextFunctionForEstimatingPlayerFromPreviousEvent(previousEvents[0], displayedEventDateText)
-        var textEstimatingFromPreviousPreviousEvent = await getTextFunctionForEstimatingPlayerFromPreviousPreviousEvent(previousEvents[1], displayedEventDateText)
-        
 
         if(previousEvents.length > 0) {
+            var textEstimatingFromPreviousEvent = await getTextFunctionForEstimatingPlayerFromPreviousEvent(previousEvents[0], displayedEventDateText)
             await displayEstimatedStatsForAllPlayersParticipatingToEvent(
                 previousEvents[0],
                 document,
@@ -747,6 +750,7 @@ async function displayEventAdditionalPersonalPlayerStats() {
         }
 
         if(previousEvents.length > 1) {
+            var textEstimatingFromPreviousPreviousEvent = await getTextFunctionForEstimatingPlayerFromPreviousPreviousEvent(previousEvents[1], displayedEventDateText)
             await displayEstimatedStatsForAllPlayersParticipatingToEvent(
                 previousEvents[1],
                 document,
