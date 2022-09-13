@@ -12,29 +12,49 @@ const BEGINERS = 'Začátečníci'
 const ADVANCED = 'Pokročilí'
 const SKILL_CATEGORY_NAMES = [BEGINERS, INTERMEDIATE, ADVANCED]
 
+const PLAYER_STATS_COLUMN_LAST_EVENT = "last-event"
+const PLAYER_STATS_COLUMN_PREVIOUS_EVENT = "previous-event"
+const PLAYER_STATS_COLUMN_PREVIOUS_PREVIOUS_EVENT = "previous-previous-event"
+const PLAYER_STATS_COLUMN_CURRENT_ROUND = "current-round"
+const PLAYER_STATS_COLUMN_LAST_ROUND = "last-round"
 
-function getStatsForPlayerEstimatedFromThisEventText(playerRankingEstimated) {
-    return ", " + playerRankingEstimated + ". v žebříčku podle účasti na tomto eventu"
+
+function getStatsForPlayerEstimatedFromPreviousEventText(playerElement, skillCategoryName, playerName, playerRankingEstimated) {
+    addPlayerStat(PLAYER_STATS_COLUMN_PREVIOUS_EVENT, playerElement, skillCategoryName, playerName, playerRankingEstimated)
 }
 
 
-function getStatsForPlayerEstimatedFromPreviousEventText(playerRankingEstimated) {
-    return ", " + playerRankingEstimated + ". v žebříčku podle účasti na posledním eventu"
+function getStatsForPlayerEstimatedFromPreviousPreviousEventText(playerElement, skillCategoryName, playerName, playerRankingEstimated) {
+    addPlayerStat(PLAYER_STATS_COLUMN_PREVIOUS_PREVIOUS_EVENT, playerElement, skillCategoryName, playerName, playerRankingEstimated)
 }
 
 
-function getStatsForPlayerEstimatedFromPreviousPreviousEventText(playerRankingEstimated) {
-    return ", " + playerRankingEstimated + ". v žebříčku podle účasti na předposledním eventu"
+function getStatsForPlayerCurrentRoundText(playerElement, skillCategoryName, playerName, playerRanking) {
+    addPlayerStat(PLAYER_STATS_COLUMN_CURRENT_ROUND, playerElement, skillCategoryName, playerName, playerRanking)
 }
 
 
-function getStatsForPlayerCurrentRoundText(playerRanking) {
-    return ", " + playerRanking + ". v žebříčku aktuálního kola"
+function addPlayerStat(columnId, playerElement, skillCategoryName, playerName, playerRanking) {
+    if (columnId == PLAYER_STATS_COLUMN_CURRENT_ROUND) {
+        playerElement.innerHTML += "<br>("
+    } else {
+        playerElement.innerHTML += ", "
+    }
+
+    if (playerRanking) {
+        playerElement.innerHTML += "" + playerRanking
+    } else {
+        playerElement.innerHTML += "."
+    }
+
+    if (columnId == PLAYER_STATS_COLUMN_PREVIOUS_PREVIOUS_EVENT) {
+        playerElement.innerHTML += ")"
+    }
 }
 
 
-function getStatsForPlayerPreviousRoundText(playerRanking) {
-    return ", " + playerRanking + ". v žebříčku minulého kola"
+function getStatsForPlayerPreviousRoundText(playerElement, skillCategoryName, playerName, playerRanking) {
+    addPlayerStat(PLAYER_STATS_COLUMN_LAST_ROUND, playerElement, skillCategoryName, playerName, playerRanking)
 }
 
 
@@ -111,17 +131,6 @@ async function getTextFunctionForEstimatingPlayersFromPreviousEvent(previousEven
 
 async function getTextFunctionForEstimatingPlayersFromPreviousPreviousEvent(previousEvent, displayedEventDateText) {
     return previousEvent.date == displayedEventDateText ? getEstimatedAverageStatsForAllPlayersOfThisEventWithResultsText : getEstimatedAverageStatsForAllPlayersOfPreviousPreviousEventWithResultsText
-}
-
-
-async function getTextFunctionForEstimatingPlayerFromPreviousEvent(previousEvent, displayedEventDateText) {
-    return previousEvent.date == displayedEventDateText ? getStatsForPlayerEstimatedFromThisEventText : getStatsForPlayerEstimatedFromPreviousEventText
-
-}
-
-
-async function getTextFunctionForEstimatingPlayerFromPreviousPreviousEvent(previousEvent, displayedEventDateText) {
-    return previousEvent.date == displayedEventDateText ? getStatsForPlayerEstimatedFromThisEventText : getStatsForPlayerEstimatedFromPreviousPreviousEventText
 }
 
 
@@ -601,13 +610,14 @@ async function displayAdditionalStatsForAllPlayersParticipatingToEvent(rankingTa
 function displayRatingForPlayerParticipatingToEvent(playerElement, rankingTableDOM, additionalTextCallback) {
 
     var playerNameElement = playerElement.childNodes[0]
-    const playerName = playerNameElement.innerText
+    var playerName = playerNameElement.innerText
+    var skillCategoryName = playerElement.parentNode.parentNode.parentNode.parentNode.previousSibling.previousSibling.innerText
 
-    loadPlayerRankingFromRankingTableDOM(playerName, rankingTableDOM, (playerRanking) => {
-        if (playerRanking) {
-            playerElement.innerHTML += additionalTextCallback(playerRanking)
-        }
-    })
+    if(playerName) {
+        loadPlayerRankingFromRankingTableDOM(playerName, rankingTableDOM, (playerRanking) => {     
+            additionalTextCallback(playerElement, skillCategoryName, playerName, playerRanking)
+        })
+    }
 }
 
 
@@ -615,17 +625,30 @@ function displayEstimatedRatingForPlayerParticipatingToEvent(playerElement, prev
 
     var playerNameElement = playerElement.childNodes[0]
     const playerName = playerNameElement.innerText
+    var playerSkillCategoryName = playerElement.parentNode.parentNode.parentNode.parentNode.previousSibling.previousSibling.innerText
 
-     SKILL_CATEGORY_NAMES.forEach((skillCategoryName) => {
-        // event could be cancelled only for specific skill group
-        if(previousEvent[skillCategoryName]) {
-            previousEvent[skillCategoryName].forEach((player) => {
-                if(player.name == playerName && player.roundRankingEstimated && player.roundRankingEstimated != -1) {
-                    playerElement.innerHTML += additionalTextCallback(player.roundRankingEstimated)
+    if(playerName) {
+        let foundPlayerInPreviousEvent = false
+
+        SKILL_CATEGORY_NAMES.forEach((skillCategoryName) => {
+            // event could be cancelled only for specific skill group
+            if(previousEvent[skillCategoryName]) {
+                const playerInPreviousEvent = previousEvent[skillCategoryName].filter((player) => {
+                    return player.name == playerName
+                })
+                if(playerInPreviousEvent.length && parseInt(playerInPreviousEvent[0].roundRankingEstimated) > 0) {
+                    // player.roundRankingEstimated is positive number or -1
+                    foundPlayerInPreviousEvent = true
+                    additionalTextCallback(playerElement, playerSkillCategoryName, playerName, playerInPreviousEvent[0].roundRankingEstimated)
+                    return
                 }
-            })
+            }
+        })
+
+        if (!foundPlayerInPreviousEvent) {
+            additionalTextCallback(playerElement, playerSkillCategoryName, playerName, null)
         }
-    })
+    }
 }
 
 
@@ -706,57 +729,66 @@ var lockDisplayEventAdditionalPersonalPlayerStats = false
 
 async function displayEventAdditionalPersonalPlayerStats() {
     if (!isLoadedRatingForAllPlayersParticipatingToEvent && !lockDisplayEventAdditionalPersonalPlayerStats) {
-        
-        const displayingFromCurrentRound = await displayAdditionalStatsForAllPlayersParticipatingToEvent(
+
+        lockDisplayEventAdditionalPersonalPlayerStats = true
+
+        var query = document.evaluate("//h2[contains(., 'Účastníci')]", document, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null).iterateNext();
+        if(!query) {
+            lockDisplayEventAdditionalPersonalPlayerStats = false
+            return
+        }
+
+        const playerStatsHeaderId = "player-stats-header"
+        var divElementHeader = document.getElementById(playerStatsHeaderId)
+
+        if(!divElementHeader) {
+            divElementHeader = document.createElement("div")
+            divElementHeader.setAttribute("class", "row d-flex flex-wrap")
+            divElementHeader.setAttribute("id", playerStatsHeaderId)
+            var divPlayer = document.createElement("div")
+            divPlayer.setAttribute("class", "col-xs-12")
+            divPlayer.textContent = "Hráč (aktuální kolo, minulé kolo, poslední turnaj, předposlední turnaj)"
+            divElementHeader.appendChild(divPlayer)
+            query.parentElement.insertBefore(divElementHeader, query.nextSibling)
+        }
+
+        await displayAdditionalStatsForAllPlayersParticipatingToEvent(
             RANKING_TABLE_BADMINTON_PRAGUE_CURRENT_MONTH,
             document,
             getStatsForPlayerCurrentRoundText
         )
 
-        if (displayingFromCurrentRound) {
-            isLoadedRatingForAllPlayersParticipatingToEvent = true
-        } else {
-            lockDisplayEventAdditionalPersonalPlayerStats = false
-            return
-        }
 
         var previousMonthRankingTableUrl = await loadPreviousRankingTableUrl()
-        const displayingFromPreviousRound = await displayAdditionalStatsForAllPlayersParticipatingToEvent(
+        await displayAdditionalStatsForAllPlayersParticipatingToEvent(
             previousMonthRankingTableUrl,
             document,
             getStatsForPlayerPreviousRoundText
         )
-
-        if (!displayingFromPreviousRound) {
-            lockDisplayEventAdditionalPersonalPlayerStats = false
-            return
-        }
         
         if(previousEvents.length == 0) {
             await estimatePreviousEvents()
         }
 
-        const eventDateLabelElement = document.evaluate("//th[contains(., 'Začátek akce')]", document, null, XPathResult.ANY_TYPE, null).iterateNext();
-        // format 02.09.2022 19:00
-        const displayedEventDateText = eventDateLabelElement.nextSibling.nextSibling.innerText
-
         if(previousEvents.length > 0) {
-            var textEstimatingFromPreviousEvent = await getTextFunctionForEstimatingPlayerFromPreviousEvent(previousEvents[0], displayedEventDateText)
+
             await displayEstimatedStatsForAllPlayersParticipatingToEvent(
                 previousEvents[0],
                 document,
-                textEstimatingFromPreviousEvent
+                getStatsForPlayerEstimatedFromPreviousEventText
             )
         }
 
         if(previousEvents.length > 1) {
-            var textEstimatingFromPreviousPreviousEvent = await getTextFunctionForEstimatingPlayerFromPreviousPreviousEvent(previousEvents[1], displayedEventDateText)
+
             await displayEstimatedStatsForAllPlayersParticipatingToEvent(
                 previousEvents[1],
                 document,
-                textEstimatingFromPreviousPreviousEvent
+                getStatsForPlayerEstimatedFromPreviousPreviousEventText
             )
         }
+
+        isLoadedRatingForAllPlayersParticipatingToEvent = true
     }
 }
 
