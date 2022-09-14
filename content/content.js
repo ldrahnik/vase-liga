@@ -114,13 +114,11 @@ function getEstimatedAverageStatsForAllPlayersOfThisEventWithResultsText(
 }
 
 
-
-var previousEvents = []
-
-async function estimatePreviousEvents() {
-    previousEvents = await loadPreviousEventResults(2)
+async function getEstimatePreviousEvents() {
+    var previousEvents = await loadPreviousEventResults(2)
     previousEvents = await loadRankingsForPreviousEventResults(previousEvents)
     previousEvents = await estimateNotFoundRankingsInRankingTableForPreviousEventResults(previousEvents)
+    return previousEvents
 }
 
 
@@ -135,34 +133,34 @@ async function getTextFunctionForEstimatingPlayersFromPreviousPreviousEvent(prev
 
 
 async function main() {
-    await estimatePreviousEvents()
+    var previousEventsWithEstimatedRanking = await getEstimatePreviousEvents()
     var previousMonthRankingTableUrl = await loadPreviousRankingTableUrl()
 
     const eventDateLabelElement = document.evaluate("//th[contains(., 'Začátek akce')]", document, null, XPathResult.ANY_TYPE, null).iterateNext();
     // format 02.09.2022 19:00
     const displayedEventDateText = eventDateLabelElement.nextSibling.nextSibling.innerText
 
-    var textEstimatingFromPreviousEvent = await getTextFunctionForEstimatingPlayersFromPreviousEvent(previousEvents[0], displayedEventDateText)
-    var textEstimatingFromPreviousPreviousEvent = await getTextFunctionForEstimatingPlayersFromPreviousPreviousEvent(previousEvents[1], displayedEventDateText)
+    var textEstimatingFromPreviousEvent = await getTextFunctionForEstimatingPlayersFromPreviousEvent(previousEventsWithEstimatedRanking[0], displayedEventDateText)
+    var textEstimatingFromPreviousPreviousEvent = await getTextFunctionForEstimatingPlayersFromPreviousPreviousEvent(previousEventsWithEstimatedRanking[1], displayedEventDateText)
 
     displayAdditionalStatsForPlayersSkillGroupParticipatingToEventByGivenRankingTableUrl(RANKING_TABLE_BADMINTON_PRAGUE_CURRENT_MONTH, getAverageStatsForAllPlayersCurrentRoundText, BEGINERS, () => {
         displayAdditionalStatsForPlayersSkillGroupParticipatingToEventByGivenRankingTableUrl(previousMonthRankingTableUrl, getAverageStatsForAllPlayersPreviousRoundText, BEGINERS, () => {
-            displayAdditionalEstimatedStatsForAllPlayersParticipatingToEvent(previousEvents[0], textEstimatingFromPreviousEvent, BEGINERS, () => {
-                displayAdditionalEstimatedStatsForAllPlayersParticipatingToEvent(previousEvents[1], textEstimatingFromPreviousPreviousEvent, BEGINERS)
+            displayAdditionalEstimatedStatsForAllPlayersParticipatingToEvent(previousEventsWithEstimatedRanking[0], textEstimatingFromPreviousEvent, BEGINERS, () => {
+                displayAdditionalEstimatedStatsForAllPlayersParticipatingToEvent(previousEventsWithEstimatedRanking[1], textEstimatingFromPreviousPreviousEvent, BEGINERS)
             })
         })
     })
     displayAdditionalStatsForPlayersSkillGroupParticipatingToEventByGivenRankingTableUrl(RANKING_TABLE_BADMINTON_PRAGUE_CURRENT_MONTH, getAverageStatsForAllPlayersCurrentRoundText, ADVANCED, () => {
         displayAdditionalStatsForPlayersSkillGroupParticipatingToEventByGivenRankingTableUrl(previousMonthRankingTableUrl, getAverageStatsForAllPlayersPreviousRoundText, ADVANCED, () => {
-            displayAdditionalEstimatedStatsForAllPlayersParticipatingToEvent(previousEvents[0], textEstimatingFromPreviousEvent, ADVANCED, () => {
-                displayAdditionalEstimatedStatsForAllPlayersParticipatingToEvent(previousEvents[1], textEstimatingFromPreviousPreviousEvent, ADVANCED)
+            displayAdditionalEstimatedStatsForAllPlayersParticipatingToEvent(previousEventsWithEstimatedRanking[0], textEstimatingFromPreviousEvent, ADVANCED, () => {
+                displayAdditionalEstimatedStatsForAllPlayersParticipatingToEvent(previousEventsWithEstimatedRanking[1], textEstimatingFromPreviousPreviousEvent, ADVANCED)
             })
         })
     })
     displayAdditionalStatsForPlayersSkillGroupParticipatingToEventByGivenRankingTableUrl(RANKING_TABLE_BADMINTON_PRAGUE_CURRENT_MONTH, getAverageStatsForAllPlayersCurrentRoundText, INTERMEDIATE, () => {
         displayAdditionalStatsForPlayersSkillGroupParticipatingToEventByGivenRankingTableUrl(previousMonthRankingTableUrl, getAverageStatsForAllPlayersPreviousRoundText, INTERMEDIATE, () => {
-            displayAdditionalEstimatedStatsForAllPlayersParticipatingToEvent(previousEvents[0], textEstimatingFromPreviousEvent, INTERMEDIATE, () => {
-                displayAdditionalEstimatedStatsForAllPlayersParticipatingToEvent(previousEvents[1], textEstimatingFromPreviousPreviousEvent, INTERMEDIATE)
+            displayAdditionalEstimatedStatsForAllPlayersParticipatingToEvent(previousEventsWithEstimatedRanking[0], textEstimatingFromPreviousEvent, INTERMEDIATE, () => {
+                displayAdditionalEstimatedStatsForAllPlayersParticipatingToEvent(previousEventsWithEstimatedRanking[1], textEstimatingFromPreviousPreviousEvent, INTERMEDIATE)
             })
         })
     })
@@ -766,23 +764,21 @@ async function displayEventAdditionalPersonalPlayerStats() {
             getStatsForPlayerPreviousRoundText
         )
         
-        if(previousEvents.length == 0) {
-            await estimatePreviousEvents()
-        }
+        var previousEventsWithEstimatedRanking = await getEstimatePreviousEvents()
 
-        if(previousEvents.length > 0) {
+        if(previousEventsWithEstimatedRanking.length > 0) {
 
             await displayEstimatedStatsForAllPlayersParticipatingToEvent(
-                previousEvents[0],
+                previousEventsWithEstimatedRanking[0],
                 document,
                 getStatsForPlayerEstimatedFromPreviousEventText
             )
         }
 
-        if(previousEvents.length > 1) {
+        if(previousEventsWithEstimatedRanking.length > 1) {
 
             await displayEstimatedStatsForAllPlayersParticipatingToEvent(
-                previousEvents[1],
+                previousEventsWithEstimatedRanking[1],
                 document,
                 getStatsForPlayerEstimatedFromPreviousPreviousEventText
             )
