@@ -609,7 +609,7 @@ async function displayAdditionalStatsForAllPlayersParticipatingToEvent(rankingTa
 
 function displayRatingForPlayerParticipatingToEvent(playerElement, rankingTableDOM, additionalTextCallback) {
 
-    var playerNameElement = playerElement.childNodes[0]
+    var playerNameElement = playerElement.firstElementChild
     var playerName = playerNameElement.innerText
     var skillCategoryName = playerElement.parentNode.parentNode.parentNode.parentNode.previousSibling.previousSibling.innerText
 
@@ -623,7 +623,7 @@ function displayRatingForPlayerParticipatingToEvent(playerElement, rankingTableD
 
 function displayEstimatedRatingForPlayerParticipatingToEvent(playerElement, previousEvent, additionalTextCallback) {
 
-    var playerNameElement = playerElement.childNodes[0]
+    var playerNameElement = playerElement.firstElementChild
     const playerName = playerNameElement.innerText
     var playerSkillCategoryName = playerElement.parentNode.parentNode.parentNode.parentNode.previousSibling.previousSibling.innerText
 
